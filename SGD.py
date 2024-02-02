@@ -15,7 +15,6 @@ class SGD:
             loss_gradients.append(np.linalg.norm(g))
             Theta = Theta - self.lr * g
             # get batch from x and y
-            x_batch, y_batch = self.get_batch(X, Y)
             g = self.calc_grad(X, Y, Theta)
         return Theta, loss_gradients
 
@@ -34,7 +33,7 @@ class LeastSquaresCG(CalcGrad):
         super().__init__()
 
     def __call__(self, X, Y, Theta):
-        return -* X.T @ (Y - X @ Theta)
+        return X.T @ (X @ Theta - Y)
 
 
 
@@ -44,10 +43,11 @@ test_sgd = SGD(LeastSquaresCG(), lr=0.0001, stop_condition=0.0001)
 import scipy.io as sio
 mat_contents = sio.loadmat('GMMData.mat')
 print(mat_contents.keys())
-X = mat_contents['Ct']
-Y = mat_contents['Yt']
+X = mat_contents['Ct'][:,:100]
+Y = mat_contents['Yt'][:,:100]
 print(X.shape, Y.shape)
 Theta = np.zeros((X.shape[1], 1))
 theta, loss_grads = test_sgd.run(X, Y, Theta)
 print(theta)
 plt.plot(loss_grads)
+plt.show()
