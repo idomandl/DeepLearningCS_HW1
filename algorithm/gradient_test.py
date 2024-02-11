@@ -11,7 +11,7 @@ class GradientTest:
 
     def __call__(self, x):
         d = np.random.randn(*self.func.get_theta_shape(x))
-        d = d/np.linalg.norm(d)
+        d = d / np.linalg.norm(d)
         epsilon = 0.01
         eps_i = epsilon
         f_x = self.func(x)
@@ -26,15 +26,13 @@ class GradientTest:
             self.func.set_Theta(Theta + eps_i * d)
             f_x_ed = self.func(x)
             diffs.append(np.abs(f_x_ed - f_x))
-            diffs_power.append(np.abs(f_x_ed - f_x - eps_i * np.dot(grad_x.flatten(),d.flatten())))
+            diffs_power.append(np.abs(f_x_ed - f_x - eps_i * np.dot(grad_x.flatten(), d.flatten())))
             eps_is.append(eps_i)
 
-        plt.semilogy(range(8), diffs,linestyle='--', marker='o', label="normal")
-        plt.semilogy(range(8), diffs_power,linestyle='--', marker='o', label="power")
+        plt.semilogy(range(8), diffs, linestyle='--', marker='o', label="normal")
+        plt.semilogy(range(8), diffs_power, linestyle='--', marker='o', label="power")
         plt.legend()
         plt.title(f"Gradient Test, {self.func_name}")
         plt.show()
         print(diffs, diffs_power, eps_is)
         return diffs, diffs_power, eps_is
-
-
