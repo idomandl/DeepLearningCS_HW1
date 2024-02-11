@@ -5,7 +5,7 @@ from loss.linear_least_squares_loss import LinearLeastSquaresLoss
 from accuracy.softmax_accuracy import SoftmaxAccuracy
 from algorithm.sgd import SGD
 import scipy.io as sio
-
+from tqdm.auto import tqdm
 
 DATA_FILES = ['GMMData', 'PeaksData', 'SwissRollData']
 
@@ -20,17 +20,17 @@ def add_bias(X):
 
 
 LEARNING_RATES = [0.01, 0.001, 0.0001]
-BATCH_SIZES = [10, 50, 100, 500, 1000]
-best_accuracy = 0
-best_result = 0
-for loss in [SoftmaxLoss, LinearLeastSquaresLoss]:
+BATCH_SIZES = [10, 100, 1000]
+for loss in tqdm([SoftmaxLoss, LinearLeastSquaresLoss], desc='Losses', position=0, leave=True):
     fig, axs = plt.subplots(ncols=len(DATA_FILES))
     fig.suptitle(f'Accuracy, {loss.name}')
     fig.tight_layout(pad=3.0)
-    for i, data_file in enumerate(DATA_FILES):
-        for lr in LEARNING_RATES:
-            for batch_size in BATCH_SIZES:
-                print(f'Processing {data_file}')
+    for i, data_file in tqdm(enumerate(DATA_FILES), desc='Data files', total=len(DATA_FILES), position=1, leave=False):
+        best_accuracy = 0
+        best_result = 0
+        for lr in tqdm(LEARNING_RATES, desc='Learning rates', position=2, leave=False):
+            for batch_size in tqdm(BATCH_SIZES, desc='Batch sizes', position=3, leave=False):
+                # print(f'Processing {data_file}')
                 # open .mat file
                 mat_contents = sio.loadmat(f'data/{data_file}.mat')
                 Y_train = mat_contents['Ct'].T
@@ -53,15 +53,15 @@ for loss in [SoftmaxLoss, LinearLeastSquaresLoss]:
 
                 # train
                 softmax_accuracy = SoftmaxAccuracy(Theta, Y_train)
-                my_sgd = SGD(loss_fn, softmax_accuracy, lr=0.001, stop_condition=0.000001, batch_size=1000)
+                my_sgd = SGD(loss_fn, softmax_accuracy, lr=lr, stop_condition=0.00000001, batch_size=batch_size, log=False)
                 Theta, accuracy_train, accuracy_test = my_sgd.run((X_train, Y_train), Theta, (X_test, Y_test))
-                curr_acc = np.mean(accuracy_test[-10:])
+                curr_acc = np.median(accuracy_test[-10:])
                 if curr_acc > best_accuracy:
                     best_accuracy = curr_acc
                     best_result = (Theta, accuracy_train, accuracy_test, loss, lr, batch_size, data_file)
-                print(f'last acc_train: {accuracy_train[-1]}, last acc_test: {accuracy_test[-1]}')
+                # print(f'last acc_train: {accuracy_train[-1]}, last acc_test: {accuracy_test[-1]}')
         axs[i].plot(best_result[1], label='train')
         axs[i].plot(best_result[2], label='test', alpha=0.6)
         axs[i].legend()
-        axs[i].set_title(f"{data_file}, lr={best_result[4]}, batch_size={best_result[5]}")
+        axs[i].set_title(f"{data_file}\nlr={best_result[4]}\nbatch_size={best_result[5]}")
     plt.show()
