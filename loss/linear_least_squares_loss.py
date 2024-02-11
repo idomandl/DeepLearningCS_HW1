@@ -3,9 +3,9 @@ from metric_function import MetricFunction
 
 
 class LinearLeastSquaresLoss(MetricFunction):
-    name = "Linear Least Squares"
+    name = "Linear Least Squares Loss"
 
-    def __init__(self, Theta, Y):
+    def __init__(self, Theta=None, Y=None):
         super().__init__(Theta, Y)
 
     def __call__(self, X, Y=None, Theta=None):

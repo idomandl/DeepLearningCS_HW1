@@ -15,24 +15,21 @@ class GradientTest:
         epsilon = 0.01
         eps_i = epsilon
         f_x = self.func(x)
-        diffs = []
-        diffs_power = []
-        eps_is = []
+        diffs, diffs_power, eps_is = [], [], []
         grad_x = self.grad_func(x)
         Theta = self.func.Theta
-        print(grad_x.shape)
-        for i in range(8):
+        for _ in range(8):
             eps_i = eps_i / 2
-            self.func.set_Theta(Theta + eps_i * d)
-            f_x_ed = self.func(x)
+            f_x_ed = self.func(x, Theta=Theta + eps_i * d)
             diffs.append(np.abs(f_x_ed - f_x))
             diffs_power.append(np.abs(f_x_ed - f_x - eps_i * np.dot(grad_x.flatten(), d.flatten())))
             eps_is.append(eps_i)
 
-        plt.semilogy(range(8), diffs, linestyle='--', marker='o', label="normal")
-        plt.semilogy(range(8), diffs_power, linestyle='--', marker='o', label="power")
-        plt.legend()
-        plt.title(f"Gradient Test, {self.func_name}")
-        plt.show()
+        fig, ax = plt.subplots()
+        ax.semilogy(range(8), diffs, linestyle='--', marker='o', label="normal")
+        ax.semilogy(range(8), diffs_power, linestyle='--', marker='o', label="power")
+        ax.legend()
+        ax.set_title(f"Gradient Test, {self.func_name}")
+        fig.show()
         print(diffs, diffs_power, eps_is)
         return diffs, diffs_power, eps_is

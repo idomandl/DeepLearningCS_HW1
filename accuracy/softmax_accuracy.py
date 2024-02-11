@@ -5,13 +5,13 @@ from metric_function import MetricFunction
 class SoftmaxAccuracy(MetricFunction):
     name = "SoftmaxAccuracy"
 
-    def __init__(self, Theta, Y):
+    def __init__(self, Theta=None, Y=None):
         super().__init__(Theta, Y)
 
     def __call__(self, X, Y=None, Theta=None):
         MetricFunction.__call__(self, X, Y, Theta)
-        proba = self.softmax(X)
-        preds = np.argmax(proba, axis=1)
+        probs = self.softmax(X)
+        preds = np.argmax(probs, axis=1)
         truths = np.argmax(self.Y, axis=1)
         return np.mean(preds == truths)
 

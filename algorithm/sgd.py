@@ -3,26 +3,26 @@ import math
 
 
 class SGD:
-    def __init__(self, loss_fn, metric_fn, lr=0.01, stop_condition=0.0001, batch_size=100, metric_sample_size=50, log=True):
+    def __init__(self, loss_fn, metric_fn, lr=0.01, stop_condition=0.0001, batch_size=100, metric_sample_percentage=0.3, log=True):
         self.loss_fn = loss_fn
         self.metric_fn = metric_fn
         self.learning_rate = lr
         self.stop_condition = stop_condition
         self.batch_size = batch_size
-        self.metric_sample_size = int(self.batch_size/2) if self.batch_size < metric_sample_size else metric_sample_size
+        self.metric_sample_percentage = metric_sample_percentage
         self.log = log
+        self.compare_window = 100
 
     def run(self, D_train, Theta, D_test):
         X_train, Y_train = D_train
         X_test, Y_test = D_test
         metric_train, metric_test = [], []
-        grad_avg = np.inf
-        prev_grad_avg = 0
+        losses = []
         # each iteration is an epoch
-        while abs(grad_avg - prev_grad_avg) > self.stop_condition:
-            prev_grad_avg = grad_avg
+        while len(losses) < self.compare_window or losses[-self.compare_window] - losses[-1] > self.stop_condition:
             # train
-            Theta, metric_avg, grad_avg = self.handle_batches(X_train, Y_train, Theta)
+            Theta, metric_avg, loss_avg = self.handle_batches(X_train, Y_train, Theta)
+            losses.append(loss_avg)
             # calculate metric for train set
             metric_train.append(metric_avg)
             # calculate metric for test set
@@ -33,28 +33,32 @@ class SGD:
         return Theta, metric_train, metric_test
     
     def handle_batches(self, X_train, Y_train, Theta):
-        metric_tot = grad_tot = 0
+        metric_tot = grad_tot = loss_tot = 0
         # each iteration is a batch
         for i in range(0, X_train.shape[0], self.batch_size):
             X_batch = X_train[i:i + self.batch_size]
             Y_batch = Y_train[i:i + self.batch_size]
             # calculate metric for train set
-            Theta, metric, grad = self.handle_batch(X_batch, Y_batch, Theta)
+            Theta, loss, grad, metric = self.handle_batch(X_batch, Y_batch, Theta)
+            loss_tot += loss
             metric_tot += metric
-            grad_tot += grad
+            # grad_tot += grad
         metric_avg = metric_tot / math.ceil(X_train.shape[0] / self.batch_size)
-        grad_avg = grad_tot / math.ceil(X_train.shape[0] / self.batch_size)
-        return Theta, metric_avg, grad_avg
+        loss_avg = loss_tot / math.ceil(X_train.shape[0] / self.batch_size)
+        # grad_avg = grad_tot / math.ceil(X_train.shape[0] / self.batch_size)
+        return Theta, metric_avg, loss_avg
 
     def handle_batch(self, X_batch, Y_batch, Theta):
         # calculate loss for train set
         X_train_sample, Y_train_sample = self.select_metric_sample(X_batch, Y_batch)
         metric = self.metric_fn(X_train_sample, Y=Y_train_sample, Theta=Theta)
         # calculate gradient
+        loss = self.loss_fn(X_batch, Y=Y_batch, Theta=Theta)
         grad = self.loss_fn.calc_grad(X_batch, Y=Y_batch, Theta=Theta)
         Theta_change = -self.learning_rate * grad
-        return Theta + Theta_change, metric, np.linalg.norm(Theta_change)
+        new_Theta = Theta + Theta_change
+        return new_Theta, loss, np.linalg.norm(Theta_change), metric
     
     def select_metric_sample(self, X, Y):
-        indices = np.random.choice(X.shape[0], self.metric_sample_size, replace=False)
+        indices = np.random.choice(X.shape[0], int(X.shape[0] * self.metric_sample_percentage), replace=False)
         return X[indices], Y[indices]
