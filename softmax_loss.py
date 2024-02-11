@@ -48,7 +48,6 @@ class SoftmaxLoss(LossFunction):
             "s")
     def __init__(self, Theta, Y):
         super().__init__(Theta, Y)
-
     def __call__(self, X):
         max_element = (X @ self.Theta).max(axis=1, keepdims=True)
         # sum((batch_size, m) * (batch_size, m)) / batch_size

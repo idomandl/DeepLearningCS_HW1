@@ -4,30 +4,22 @@ from gradient_test import GradientTest
 from softmax_loss import SoftmaxLoss, SoftmaxLossLoop
 from linear_least_squares_loss import LinearLeastSquaresLoss
 import numpy as np
+import scipy.io as sio
+
 
 from scipy.optimize import check_grad
 def main():
-    theta = np.array([[0.7, 0.2]])
-    y = np.array([[1,0]])
-    softmax_loss = SoftmaxLoss(theta, y)
-    gradient_test = GradientTest(softmax_loss, softmax_loss.calc_grad, (1, 1), "softmax loss")
-    diffs, power_diffs, eps_is = gradient_test()
-    linear_loss = LinearLeastSquaresLoss(theta, y)
-    gradient_test = GradientTest(linear_loss, linear_loss.calc_grad, (1, 1), "linear loss")
-    diffs, power_diffs, eps_is = gradient_test()
-    print(eps_is)
-    # linear_squares = LinearLeastSquaresLoss(theta, y)
-    # gradient_test = GradientTest(linear_squares, linear_squares.calc_grad, (1,1), "linear squares loss")
-    # gradient_test()
-#     diffs = [0.07356278528598992,0.044236580085952326, 0.02398208690371284, 0.012456992667040367, 0.0063449836373159485, 0.0032016136446078036, 0.0016080872787913592, 0.0008058637535164337]
-#     power_diffs = [0.029820749771815258,0.007455187442950262, 0.0018637968607393418, 0.00046594921518483545, 0.00011648730379754113,2.9121825948053015e-5, 7.2804564865691646e-6, 1.820114123418648e-6
-# ]
-#     e= 0.1
-#     epis = [e*pow(0.5,i) for i in range(1,9)]
-#     plt.plot(epis,diffs)
-#     plt.plot(epis, power_diffs)
-#     plt.legend(['Difference', 'Power'])
-#     plt.show()
+    mat_contents = sio.loadmat(f'GMMData.mat')
+    Y_train = mat_contents['Ct'].T
+    X_train = mat_contents['Yt'].T
+    theta = np.random.randn(X_train.shape[1],Y_train.shape[1])#np.array([[0.7, 0.2]])
+    y = np.array([[0,0,1],[0,0,1],[0,1,0],[1,0,0],[0,1,0]])#shape=(5,3)#np.array([[1,0]])
+    softmax_loss = SoftmaxLoss(theta, Y_train)
+    gradient_test = GradientTest(softmax_loss, softmax_loss.calc_grad, X_train.shape, "softmax loss")
+    diffs, power_diffs, eps_is = gradient_test(X_train)
+    linear_loss = LinearLeastSquaresLoss(theta, Y_train)
+    gradient_test = GradientTest(linear_loss, linear_loss.calc_grad, X_train.shape, "linear loss")
+    diffs, power_diffs, eps_is = gradient_test(X_train)
 
 if __name__ == "__main__":
     main()

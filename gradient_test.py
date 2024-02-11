@@ -9,8 +9,7 @@ class GradientTest:
         self.x_shape = x_shape
         self.func_name = func_name
 
-    def __call__(self):
-        x = np.random.randn(*self.x_shape)
+    def __call__(self, x):
         d = np.random.randn(*self.func.get_theta_shape(x))
         d = d/np.linalg.norm(d)
         epsilon = 0.01
