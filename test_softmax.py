@@ -7,10 +7,13 @@ import numpy as np
 
 from scipy.optimize import check_grad
 def main():
-    theta = np.random.randn(2,2)
-    y = np.random.randn(1, 2)
-    softmax_loss = SoftmaxLossLoop(theta, y)
-    gradient_test = GradientTest(softmax_loss, softmax_loss.calc_grad, (1, 2), "softmax loss")
+    theta = np.array([[0.7, 0.2]])
+    y = np.array([[1,0]])
+    softmax_loss = SoftmaxLoss(theta, y)
+    gradient_test = GradientTest(softmax_loss, softmax_loss.calc_grad, (1, 1), "softmax loss")
+    diffs, power_diffs, eps_is = gradient_test()
+    linear_loss = LinearLeastSquaresLoss(theta, y)
+    gradient_test = GradientTest(linear_loss, linear_loss.calc_grad, (1, 1), "linear loss")
     diffs, power_diffs, eps_is = gradient_test()
     print(eps_is)
     # linear_squares = LinearLeastSquaresLoss(theta, y)

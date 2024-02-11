@@ -66,19 +66,18 @@ def add_bias(X):
 
 def main():
 
-    for loss in [SoftmaxLossLoop, SoftmaxLoss, LinearLeastSquaresLoss]:
+    for loss in [SoftmaxLoss, LinearLeastSquaresLoss, SoftmaxLossLoop]:
         fig, axs = plt.subplots(ncols=len(DATA_FILES))
         fig.suptitle(f'Losses, {loss.name}')
         fig.tight_layout(pad=3.0)
         for i, data_file in enumerate(DATA_FILES):
             print(f'Processing {data_file}')
             # open .mat file
-            mat_contents = sio.loadmat('SwissRollData.mat')
-            X_train = mat_contents['Ct'].T
-            Y_train = mat_contents['Yt'].T
-            X_test = mat_contents['Cv'].T
-            Y_test = mat_contents['Yv'].T
-
+            mat_contents = sio.loadmat(f'{data_file}')
+            Y_train = mat_contents['Ct'].T
+            X_train = mat_contents['Yt'].T
+            Y_test = mat_contents['Cv'].T
+            X_test = mat_contents['Yv'].T
             # Shuffle the data
             X_train, Y_train = shuffle_data(X_train, Y_train)
             X_test, Y_test = shuffle_data(X_test, Y_test)
@@ -94,7 +93,7 @@ def main():
             #print(f'{X_train.shape=}, {Y_train.shape=}, {Theta.shape=}')
 
             # train
-            my_sgd = SGD(loss_fn, lr=0.001, stop_condition=0.00000001, batch_size=1000)
+            my_sgd = SGD(loss_fn, lr=0.001, stop_condition=0.000001, batch_size=1000)
             Theta, loss_train, loss_test = my_sgd.run((X_train, Y_train), Theta, (X_test, Y_test))
             print(Theta)
             #print(f'{Theta.shape=}')
