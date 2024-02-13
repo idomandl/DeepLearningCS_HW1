@@ -30,6 +30,7 @@ class GradientTest:
         ax.semilogy(range(8), diffs_power, linestyle='--', marker='o', label="power")
         ax.legend()
         ax.set_title(f"Gradient Test, {self.func_name}")
+        ax.set_xlabel('i')
         fig.show()
         print(diffs, diffs_power, eps_is)
         return diffs, diffs_power, eps_is

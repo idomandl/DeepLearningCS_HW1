@@ -3,7 +3,7 @@ import math
 
 
 class SGD:
-    def __init__(self, loss_fn, metric_fn, lr=0.01, stop_condition=0.0001, batch_size=100, metric_sample_percentage=0.3, log=True):
+    def __init__(self, loss_fn, metric_fn, lr=0.01, stop_condition=0.0005, batch_size=100, metric_sample_percentage=0.3, log=True):
         self.loss_fn = loss_fn
         self.metric_fn = metric_fn
         self.learning_rate = lr
