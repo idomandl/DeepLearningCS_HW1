@@ -1,12 +1,10 @@
 import numpy as np
 import math
 from function.function import Function
-from nn import NN
 
 
 class SGD:
-    def __init__(self, nn: NN, loss: Function, metric_fn, lr=0.01, stop_condition=0.0005, batch_size=100, metric_sample_percentage=0.3, log=True):
-        self.nn = nn
+    def __init__(self, loss: Function, metric_fn, lr=0.01, stop_condition=0.0005, batch_size=100, metric_sample_percentage=0.3, log=True):
         self.loss = loss
         self.metric_fn = metric_fn
         self.learning_rate = lr
@@ -29,8 +27,7 @@ class SGD:
             metric_train.append(metric_avg)
             # calculate metric for test set
             X_test_sample, Y_test_sample = self.select_metric_sample(X_test, Y_test)
-            nn_output = self.nn.forward(X_test_sample)
-            metric_test.append(self.metric_fn(nn_output, Y_test_sample, Theta))
+            metric_test.append(self.metric_fn(X_test_sample, Y_test_sample, Theta))
             if self.log and len(metric_train) % 200 == 0:
                 print(f'train = {metric_train[-1]} , test = {metric_test[-1]}')
         return Theta, metric_train, metric_test
@@ -54,15 +51,12 @@ class SGD:
     def handle_batch(self, X_batch, Y_batch, Theta):
         # calculate loss for train set
         X_train_sample, Y_train_sample = self.select_metric_sample(X_batch, Y_batch)
-        nn_output = self.nn.forward(X_train_sample)
-        metric = self.metric_fn(nn_output, Y_train_sample, Theta)
+        metric = self.metric_fn(X_train_sample, Y_train_sample, Theta)
         # calculate gradient
-        nn_output = self.nn.forward(X_batch)
-        loss = self.loss.loss(nn_output, Y_batch, Theta)
-        grad = self.loss.loss_grad_Theta(nn_output, Y_batch, Theta)
+        loss = self.loss.loss(X_batch, Y_batch, Theta)
+        grad = self.loss.loss_grad_Theta(X_batch, Y_batch, Theta)
         Theta_change = -self.learning_rate * grad
         new_Theta = Theta + Theta_change
-        self.nn.backward(self.loss.loss_grad_X(nn_output, Y_batch, Theta), self.learning_rate)
         return new_Theta, loss, np.linalg.norm(Theta_change), metric
     
     def select_metric_sample(self, X, Y):

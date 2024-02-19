@@ -1,36 +1,33 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from function.function import Function
 
 
 class GradientTest:
-    def __init__(self, func, grad_func, x_shape, func_name):
-        self.func = func
-        self.grad_func = grad_func
-        self.x_shape = x_shape
-        self.func_name = func_name
+    def __init__(self, loss: Function):
+        self.loss = loss
 
-    def __call__(self, x):
-        d = np.random.randn(*self.func.get_theta_shape(x))
-        d = d / np.linalg.norm(d)
+    def __call__(self, X, Y, Theta):
         epsilon = 0.01
-        eps_i = epsilon
-        f_x = self.func(x)
-        diffs, diffs_power, eps_is = [], [], []
-        grad_x = self.grad_func(x)
-        Theta = self.func.Theta
+        d = self.loss.generate_Theta(*self.loss.get_Theta_shape(X, Y))
+        print(f'{d.shape=}')
+        d = d / np.linalg.norm(d)
+        diffs, diffs_power, epsilons = [], [], []
+        f_x = self.loss.loss(X, Y, Theta)
+        grad_x = self.loss.loss_grad_Theta(X, Y, Theta)
         for _ in range(8):
-            eps_i = eps_i / 2
-            f_x_ed = self.func(x, Theta=Theta + eps_i * d)
+            epsilon /= 2
+            f_x_ed = self.loss.loss(X, Y, Theta + epsilon * d)
             diffs.append(np.abs(f_x_ed - f_x))
-            diffs_power.append(np.abs(f_x_ed - f_x - eps_i * np.dot(grad_x.flatten(), d.flatten())))
-            eps_is.append(eps_i)
+            diffs_power.append(np.abs(f_x_ed - f_x - epsilon * np.dot(grad_x.flatten(), d.flatten())))
+            epsilons.append(epsilon)
 
         fig, ax = plt.subplots()
         ax.semilogy(range(8), diffs, linestyle='--', marker='o', label="normal")
         ax.semilogy(range(8), diffs_power, linestyle='--', marker='o', label="power")
         ax.legend()
-        ax.set_title(f"Gradient Test, {self.func_name}")
+        ax.set_title(f"Gradient Test, {self.loss.name} Loss")
         ax.set_xlabel('i')
         fig.show()
-        print(diffs, diffs_power, eps_is)
-        return diffs, diffs_power, eps_is
+        print(diffs, diffs_power, epsilons)
+        return diffs, diffs_power, epsilons

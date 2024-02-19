@@ -1,5 +1,5 @@
 import numpy as np
-from loss.softmax_loss import SoftmaxLoss
+from metric.softmax_loss import SoftmaxLoss
 
 
 X = np.array([[2.6, -1.7, 1], [-0.6, -1.7, 1], [-0.06, 1.59, 1], [1.93, -0.64417, 1]])
@@ -8,4 +8,4 @@ THETA = np.array(
 Y = np.array([[0, 0, 0, 0], [0, 1, 0, 0], [1, 0, 0, 1], [0, 0, 0, 0], [0, 0, 1, 0]]).T
 softmax_loss = SoftmaxLoss(THETA, Y)
 print(softmax_loss(X))
-print(softmax_loss.calc_grad(X))
+print(softmax_loss.calc_grad_Theta(X))

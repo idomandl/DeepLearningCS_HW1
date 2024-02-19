@@ -1,14 +1,16 @@
 import matplotlib.pyplot as plt
-from function.linear_least_squares import LinearLeastSquares
+from function.softmax import Softmax
 from data_helper import DATA_FILES
-from algo_helper import run_sgd
+from algo_helper import run_sgd_nn
+from nn import NN
 
 DATA_FILE = DATA_FILES[0]
-LR = 0.001
+LR = 0.01
 BATCH_SIZE = 100
-LOSS = LinearLeastSquares()
+LOSS = Softmax()
 
-_, accuracy_train, _ = run_sgd(DATA_FILE, LOSS, metric_fn=LOSS.loss, lr=LR, batch_size=BATCH_SIZE)
+nn = NN([128, 64, 10], activation='relu') # todo: does sgd holds nn or the opposite?
+_, accuracy_train, _ = run_sgd_nn(nn, DATA_FILE, LOSS, metric_fn=LOSS.loss, lr=LR, batch_size=BATCH_SIZE)
 # show loss
 fig, axs = plt.subplots(1, 1)
 fig.suptitle(f'{LOSS.name}')
