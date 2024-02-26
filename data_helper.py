@@ -27,3 +27,11 @@ def get_data(data_file):
     X_train = add_bias(X_train)
     X_test = add_bias(X_test)
     return X_train, Y_train, X_test, Y_test
+
+def select_metric_sample(X, Y, metric_sample_percentage):
+    indices = np.random.choice(X.shape[0], int(X.shape[0] * metric_sample_percentage), replace=False)
+    return X[indices], Y[indices]
+
+def split_to_batches(X, Y, batch_size):
+    for i in range(0, X.shape[0], batch_size):
+        yield X[i:i + batch_size], Y[i:i + batch_size]

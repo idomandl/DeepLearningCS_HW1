@@ -2,6 +2,7 @@ import numpy as np
 
 
 class Function:
+    name = "function"
     def __call__(self, X, Theta):
         raise NotImplementedError
 
@@ -29,5 +30,5 @@ class Function:
     def get_Theta_shape(self, X, Y):
         return X.shape[1], Y.shape[1]
 
-    def generate_Theta(self, X_shape, Y_shape):
-        return np.random.randn(X_shape, Y_shape)
+    def generate_tensor(self, *shape):
+        return np.random.randn(*shape)

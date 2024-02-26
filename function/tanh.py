@@ -2,7 +2,7 @@ import numpy as np
 from function.function import Function
 
 
-class TanhActivation(Function):
+class Tanh(Function):
     name = "tanh"
 
     def __call__(self, X, Theta):

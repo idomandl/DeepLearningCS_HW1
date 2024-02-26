@@ -1,70 +1,48 @@
-import numpy as np
-import math
-from function.function import Function
-from nn import NN
+from data_helper import select_metric_sample
+from tqdm import tqdm
 
 
 class SGD:
-    def __init__(self, nn: NN, loss: Function, metric_fn, lr=0.01, stop_condition=0.0005, batch_size=100, metric_sample_percentage=0.3, log=True):
-        self.nn = nn
-        self.loss = loss
-        self.metric_fn = metric_fn
+    def __init__(self, metrics, lr=0.01, stop_condition=200, metric_sample_percentage=0.3, log=True):
+        self.metrics = metrics
         self.learning_rate = lr
         self.stop_condition = stop_condition
-        self.batch_size = batch_size
         self.metric_sample_percentage = metric_sample_percentage
         self.log = log
         self.compare_window = 50
+        self.losses = []
+        self.metric_results_train = []
+        self.metric_results_test = []
+        self.batch_results_train = []
+        self.epoch = 0
+        self.epoch_bar = tqdm(total = stop_condition)
 
-    def run(self, D_train, Theta, D_test):
-        X_train, Y_train = D_train
-        X_test, Y_test = D_test
-        metric_train, metric_test, losses = [], [], []
-        # each iteration is an epoch
-        while len(losses) < self.compare_window or max(abs(losses[-self.compare_window:] - losses[-1])) > self.stop_condition:
-            # train
-            Theta, metric_avg, loss_avg = self.handle_batches(X_train, Y_train, Theta)
-            losses.append(loss_avg)
-            # calculate metric for train set
-            metric_train.append(metric_avg)
-            # calculate metric for test set
-            X_test_sample, Y_test_sample = self.select_metric_sample(X_test, Y_test)
-            nn_output = self.nn.forward(X_test_sample)
-            metric_test.append(self.metric_fn(nn_output, Y_test_sample, Theta))
-            if self.log and len(metric_train) % 200 == 0:
-                print(f'train = {metric_train[-1]} , test = {metric_test[-1]}')
-        return Theta, metric_train, metric_test
-    
-    def handle_batches(self, X_train, Y_train, Theta):
-        metric_tot = grad_tot = loss_tot = 0
-        # each iteration is a batch
-        for i in range(0, X_train.shape[0], self.batch_size):
-            X_batch = X_train[i:i + self.batch_size]
-            Y_batch = Y_train[i:i + self.batch_size]
-            # calculate metric for train set
-            Theta, loss, grad, metric = self.handle_batch(X_batch, Y_batch, Theta)
-            loss_tot += loss
-            metric_tot += metric
-            # grad_tot += grad
-        metric_avg = metric_tot / math.ceil(X_train.shape[0] / self.batch_size)
-        loss_avg = loss_tot / math.ceil(X_train.shape[0] / self.batch_size)
-        # grad_avg = grad_tot / math.ceil(X_train.shape[0] / self.batch_size)
-        return Theta, metric_avg, loss_avg
 
-    def handle_batch(self, X_batch, Y_batch, Theta):
-        # calculate loss for train set
-        X_train_sample, Y_train_sample = self.select_metric_sample(X_batch, Y_batch)
-        nn_output = self.nn.forward(X_train_sample)
-        metric = self.metric_fn(nn_output, Y_train_sample, Theta)
-        # calculate gradient
-        nn_output = self.nn.forward(X_batch)
-        loss = self.loss.loss(nn_output, Y_batch, Theta)
-        grad = self.loss.loss_grad_Theta(nn_output, Y_batch, Theta)
-        Theta_change = -self.learning_rate * grad
-        new_Theta = Theta + Theta_change
-        self.nn.backward(self.loss.loss_grad_X(nn_output, Y_batch, Theta), self.learning_rate)
-        return new_Theta, loss, np.linalg.norm(Theta_change), metric
-    
-    def select_metric_sample(self, X, Y):
-        indices = np.random.choice(X.shape[0], int(X.shape[0] * self.metric_sample_percentage), replace=False)
-        return X[indices], Y[indices]
+    def should_stop(self, calc_metric, forward, X, Y):
+        self.epoch += 1
+        self.epoch_bar.update()
+        if self.epoch == 1:
+            return False
+        X_sample, Y_sample = select_metric_sample(X, Y, self.metric_sample_percentage)
+        self.metric_results_test.append({
+            name: calc_metric(forward(X_sample), Y_sample, fn) for name, fn in self.metrics.items()
+        })
+        self.metric_results_train.append({
+            name: sum([res[name] for res in self.batch_results_train]) / len(self.batch_results_train) for name in self.metrics.keys()
+        })
+        if self.log and self.epoch % 50 == 1:
+            print(f'train = {self.metric_results_train[-1]} , test = {self.metric_results_test[-1]}')
+        return self.epoch > self.stop_condition
+        # if len(self.losses) < self.compare_window:
+        #     return False
+        # return max(abs(self.losses[-self.compare_window:] - self.losses[-1])) < self.stop_condition
+
+    def update_params(self, Theta_grads, *args):
+        return - self.learning_rate * Theta_grads
+
+    def update(self, loss, calc_metric, X, Y):
+        self.losses.append(loss)
+        sample = select_metric_sample(X, Y, self.metric_sample_percentage)
+        self.batch_results_train.append({
+            name: calc_metric(*sample, fn) for name, fn in self.metrics.items()
+        })
