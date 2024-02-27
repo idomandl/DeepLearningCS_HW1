@@ -9,7 +9,7 @@ class Tanh(Function):
         return np.tanh(X @ Theta)
 
     def grad_X(self, X, Theta):
-        return (1 - np.tanh(X @ Theta) ** 2) @ Theta.T
+        return (1 - (np.tanh(X @ Theta)**2)) @ Theta.T
 
     def grad_Theta(self, X, Theta):
-        return X.T @ (1 - np.tanh(X @ Theta) ** 2)
+        return X.T @ (1 - (np.tanh(X @ Theta)**2))

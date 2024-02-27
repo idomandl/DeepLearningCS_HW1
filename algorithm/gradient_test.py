@@ -9,7 +9,7 @@ class GradientTest:
 
     def __call__(self, X, Y, Theta):
         epsilon = 0.01
-        d_Theta = self.loss.generate_tensor(*self.loss.get_Theta_shape(X, Y))
+        d_Theta = self.loss.generate_tensor(*Theta.shape)
         d_Theta = d_Theta / np.linalg.norm(d_Theta)
         d_X = self.loss.generate_tensor(*X.shape)
         d_X = d_X / np.linalg.norm(d_X)

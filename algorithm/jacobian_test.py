@@ -22,14 +22,14 @@ class JacobianTest:
             epsilons.append(epsilon)
             # change in Theta
             f_Theta_ed = self.func(X, Theta + epsilon * d_Theta)
-            diffs_Theta.append(np.linalg.norm(f_Theta_ed - f))
+            diffs_Theta.append(np.average(np.linalg.norm(f_Theta_ed - f, axis=1)))
             lol = grad_Theta@(epsilon*d_Theta).T
             print(f'shapes, lol: {lol.shape} ,f_Theta_ed: {f_Theta_ed.shape}, f: {f.shape}')
-            diffs_power_Theta.append(np.linalg.norm(f_Theta_ed - f - epsilon*np.dot(grad_Theta.flatten(),d_Theta.flatten())))
+            diffs_power_Theta.append(np.average(np.linalg.norm(f_Theta_ed - f - epsilon * np.dot(grad_Theta.flatten(), d_Theta.flatten()), axis=1)))
             # change in X
             f_X_ed = self.func(X + epsilon * d_X, Theta)
-            diffs_X.append(np.linalg.norm(f_X_ed - f))
-            diffs_power_X.append(np.linalg.norm(f_X_ed - f - np.dot(grad_X.flatten(),d_X.flatten())*epsilon))
+            diffs_X.append(np.average(np.linalg.norm(f_X_ed - f, axis=1)))
+            diffs_power_X.append(np.average(np.linalg.norm(f_X_ed - f - epsilon * np.dot(grad_X.flatten(), d_X.flatten()), axis=1)))
 
         fig, axs = plt.subplots(ncols=2)
         fig.suptitle(f"Jacobian Test, {self.func.name} Function")
