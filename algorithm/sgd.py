@@ -30,7 +30,7 @@ class SGD:
         self.metric_results_train.append({
             name: sum([res[name] for res in self.batch_results_train]) / len(self.batch_results_train) for name in self.metrics.keys()
         })
-        if self.log and self.epoch % 50 == 1:
+        if self.log and self.epoch % 10 == 1:
             print(f'train = {self.metric_results_train[-1]} , test = {self.metric_results_test[-1]}')
         return self.epoch > self.stop_condition
         # if len(self.losses) < self.compare_window:

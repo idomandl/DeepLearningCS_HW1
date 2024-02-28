@@ -1,22 +1,23 @@
 import numpy as np
 from function.function import Function
 from algorithm.sgd import SGD
+from network.block import Block
 
-class Layer:
+
+class Layer(Block):
     def __init__(self, Theta_dim, activation: Function):
         self.activation = activation
         self.Theta = activation.generate_tensor(*Theta_dim) * 0.01
 
     def forward(self, X):
         self.X = X
-        return self.activation(X, self.Theta)
+        return self.activation(X @ self.Theta)
 
     def backward(self, dA, optimizer: SGD):
-        dTheta = self.activation.grad_Theta(self.X, self.Theta)
-        dX = self.activation.grad_X(self.X, self.Theta)
-        #print(f'dX = {dX.shape}, dA = {dA.shape}, dTheta = {dTheta.shape}')
+        grad = self.activation.grad(self.X @ self.Theta)
+        dTheta = self.X.T @ grad
+        dX = grad @ self.Theta.T
         dThetaLoss = dTheta * dA.T
-        #print(f'dThetaLoss = {dThetaLoss.shape}')
         self.Theta += optimizer.update_params(dThetaLoss, self)
         # dX = (batch_size, input), dA = (batch_size, output)
         return np.sum(dX.T, axis=1) * sum(dA)
@@ -36,3 +37,9 @@ class Layer:
 
     def metric(self, X, Y, metric):
         return metric(X, Y, self.Theta)
+
+    def get_input_dim(self):
+        return self.Theta.shape[0]
+    
+    def get_output_dim(self):
+        return self.Theta.shape[1]

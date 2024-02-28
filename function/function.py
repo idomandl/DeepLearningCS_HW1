@@ -11,6 +11,9 @@ class Function:
 
     def grad_X(self, X, Theta):
         raise NotImplementedError
+    
+    def grad(self, Z):
+        raise NotImplementedError
 
     def loss(self, X, Y, Theta):
         raise NotImplementedError
