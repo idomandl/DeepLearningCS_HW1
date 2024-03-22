@@ -13,12 +13,13 @@ class Layer(Block):
         self.X = X
         return self.activation(X @ self.Theta)
 
-    def backward(self, dA, optimizer: SGD):
+    def backward(self, dA, optimizer: SGD, is_training=True):
         grad = self.activation.grad(self.X @ self.Theta)
         dTheta = self.X.T @ grad
         dX = grad @ self.Theta.T
         dThetaLoss = dTheta * dA.T
-        self.Theta += optimizer.update_params(dThetaLoss, self)
+        if is_training:
+            self.Theta += optimizer.update_params(dThetaLoss, self)
         # dX = (batch_size, input), dA = (batch_size, output)
         return np.sum(dX.T, axis=1) * sum(dA)
 
@@ -26,10 +27,11 @@ class Layer(Block):
 # A2 - w(16,128), x(batch,16), DA(batch,128)
 # A1 - w(x.shape[1], 16), x(batch,x.shape[1])
 
-    def backward_loss(self, X, Y, learning_rate):
+    def backward_loss(self, X, Y, learning_rate, is_training=True):
         dL_Theta = self.activation.loss_grad_Theta(X, Y, self.Theta)
         dL_X = self.activation.loss_grad_X(X, Y, self.Theta)
-        self.Theta -= learning_rate * dL_Theta
+        if is_training:
+            self.Theta -= learning_rate * dL_Theta
         return np.sum(dL_X, axis=0)
 
     def loss(self, X, Y):

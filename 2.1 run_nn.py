@@ -4,41 +4,36 @@ from function.tanh import Tanh
 from data_helper import DATA_FILES, get_data, read_file
 from network.nn import NN
 from function.function import Function
-from algorithm.sgd import SGD
 from algorithm.sgd_momentum import SGDMomentum
-from algorithm.jacobian_test import JacobianTest
+from algorithm.jacobian_test import Jacobian_Test
+from algorithm.jacobian_transposed_test import Jacobian_Transposed_Test
+from network.layer import Layer
+import numpy as np
+
 
 DATA_FILE = DATA_FILES[0]
+
+# ----- Jacobian Test -----
+_, _, X_test, Y_test = read_file(DATA_FILE)
+Theta = Function().generate_tensor(*Function().get_Theta_shape(X_test, Y_test))
+Jacobian_Test(Tanh())(X_test[np.random.randint(0, X_test.shape[0])].reshape(1, -1), Theta)
+plt.show()
+
+# ----- Jacobian Transposed Test -----
+jac_t_test = Jacobian_Transposed_Test(Tanh())
+results = [jac_t_test(np.random.rand(1, 10), np.random.rand(10, 5) * 0.01) for _ in range(1000)]
+print(f'Jacobian Transposed Test: {max(results)}')
+
+# ----- NN -----
 LR = 0.05
 STOP_CONDITION = 200
 BATCH_SIZE = 100
-LOSS = Softmax()
-
-# import numpy as np
-# matrix = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-# print(np.average(np.linalg.norm(matrix, axis=1)))
-
-_, _, X_test, Y_test = read_file(DATA_FILE)
-Theta = Function().generate_tensor(*Function().get_Theta_shape(X_test, Y_test))
-JacobianTest(Tanh())(X_test, Theta)
-plt.show()
 
 X_train, Y_train, X_test, Y_test = get_data(DATA_FILE)
-nn_dims = [
-    X_train.shape[1],
-    16,
-    128,
-    Y_train.shape[1],
-]
-nn_activations = [
-    Tanh(),
-    Tanh(),
-    Softmax(),
-]
+layers = [Layer((X_train.shape[1], 16), Tanh()), Layer((16, 128), Tanh()), Layer((128, Y_train.shape[1]), Softmax())]
 metrics = {'loss': Softmax().loss, 'accuracy': Softmax().accuracy}
-#optimizer = SGD(metrics, lr=LR, stop_condition=300)
-optimizer = SGDMomentum(metrics, LR, STOP_CONDITION)
-nn = NN(nn_dims, nn_activations, optimizer, batch_size=BATCH_SIZE)
+optimizer = SGDMomentum(metrics=metrics, lr=LR, stop_condition=STOP_CONDITION)
+nn = NN(layers, optimizer, batch_size=BATCH_SIZE)
 # train
 metrics_results_train, metrics_results_test = nn.fit((X_train, Y_train), (X_test, Y_test))
 # show loss

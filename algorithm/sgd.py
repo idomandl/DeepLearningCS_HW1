@@ -15,7 +15,7 @@ class SGD:
         self.metric_results_test = []
         self.batch_results_train = []
         self.epoch = 0
-        self.epoch_bar = tqdm(total = stop_condition)
+        self.epoch_bar = tqdm(total = stop_condition, disable=not log)
 
 
     def should_stop(self, calc_metric, forward, X, Y):

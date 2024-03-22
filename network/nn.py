@@ -4,6 +4,8 @@ from data_helper import split_to_batches
 
 
 class NN:
+    name="NN"
+
     def __init__(self, blocks: list[Block], optimizer: SGD, batch_size=100):
         # if len(network_dims) != len(activations) + 1:
         #     raise ValueError("length of network_dims should be length of activations + 1")
@@ -34,17 +36,23 @@ class NN:
         nn_output = self.forward(X)
         return self.blocks[-1].activation(nn_output, self.blocks[-1].Theta)
 
-    def backward(self, dL_X):
+    def backward(self, dL_X, is_training=True):
         if len(self.blocks) == 1:
             return
-        d_X = self.blocks[-2].backward(dL_X, self.optimizer)
+        d_X = self.blocks[-2].backward(dL_X, self.optimizer, is_training=is_training)
         for block in reversed(self.blocks[:-2]):
-            d_X = block.backward(d_X, self.optimizer)
+            d_X = block.backward(d_X, self.optimizer, is_training=is_training)
         return d_X
     
-    def grad(self, X):
-        proba = self.predict(X)
-        return self.backward # todo
+    def loss(self, X, Y):
+        nn_output = self.forward(X)
+        return self.blocks[-1].loss(nn_output, Y)
+    
+    def grad_X(self, X, Y):
+        nn_output = self.forward(X)
+        dL_X = self.blocks[-1].backward_loss(nn_output, Y, self.optimizer.learning_rate, is_training=False)
+        grad_X = self.backward(dL_X, is_training=False)
+        return grad_X
 
     def fit(self, D_train, D_test):
         last_block = self.blocks[-1]

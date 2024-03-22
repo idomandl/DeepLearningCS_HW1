@@ -1,8 +1,8 @@
 from algorithm.sgd import SGD
 class SGDMomentum(SGD):
 
-    def __init__(self, *args, momentum=0.9):
-        super().__init__(*args)
+    def __init__(self, momentum=0.9, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.momentum = momentum
         self.velocities = {}
 

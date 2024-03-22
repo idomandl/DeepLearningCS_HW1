@@ -22,3 +22,6 @@ class Block:
     
     def get_output_dim(self):
         raise NotImplementedError
+
+    def grad_test(self):
+        raise NotImplementedError

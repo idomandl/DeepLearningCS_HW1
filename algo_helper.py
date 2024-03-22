@@ -1,9 +1,7 @@
-import numpy as np
 from algorithm.basic_sgd import SGD as Basic_SGD
 from algorithm.sgd import SGD
 from data_helper import get_data
 from function.function import Function
-from nn import NN
 
 def run_sgd(data_file: str, loss: Function, metric_fn, lr: float, batch_size: int):
     X_train, Y_train, X_test, Y_test = get_data(data_file)

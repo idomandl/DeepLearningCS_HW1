@@ -1,4 +1,4 @@
-from algorithm.jacobian_test import JacobianTest
+from algorithm.jacobian_test import Jacobian_Test
 from function.tanh import Tanh
 from function.function import Function
 import matplotlib.pyplot as plt
@@ -6,7 +6,7 @@ from data_helper import DATA_FILES, read_file
 
 
 def run_jacobian_test(fn, X, Theta):
-    JacobianTest(fn)(X, Theta)
+    Jacobian_Test(fn)(X, Theta)
 
 
 data_file = DATA_FILES[0]
