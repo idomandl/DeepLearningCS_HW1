@@ -44,6 +44,14 @@ class NN:
             d_X = block.backward(d_X, self.optimizer, is_training=is_training)
         return d_X
     
+    def Theta_backward(self, dL_X, is_training=True):
+        if len(self.blocks) == 1:
+            return
+        d_X = self.blocks[-2].backward(dL_X, self.optimizer, is_training=is_training)
+        for block in reversed(self.blocks[1:-2]):
+            d_X = block.backward(d_X, self.optimizer, is_training=is_training)
+        return self.blocks[0].Theta_backward()
+    
     def loss(self, X, Y):
         nn_output = self.forward(X)
         return self.blocks[-1].loss(nn_output, Y)
@@ -53,6 +61,11 @@ class NN:
         dL_X = self.blocks[-1].backward_loss(nn_output, Y, self.optimizer.learning_rate, is_training=False)
         grad_X = self.backward(dL_X, is_training=False)
         return grad_X
+    
+    def grad_Theta(self, X, Y):
+        nn_output = self.forward(X)
+        dL_X = self.blocks[-1].backward_loss(nn_output, Y, self.optimizer.learning_rate, is_training=False)
+        return self.Theta_backward(dL_X, is_training=False)
 
     def fit(self, D_train, D_test):
         last_block = self.blocks[-1]

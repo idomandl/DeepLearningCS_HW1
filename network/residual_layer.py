@@ -10,6 +10,7 @@ class Residual_Layer(Block):
     def __init__(self, Theta_dim, activation: Function):
         self.activation = activation
         self.Theta1 = activation.generate_tensor(*Theta_dim) * 0.01
+        self.Theta = self.Theta1
         self.Theta2 = activation.generate_tensor(*reversed(Theta_dim)) * 0.01
 
     def forward(self, X):
@@ -58,6 +59,17 @@ class Residual_Layer(Block):
         if is_training:
             self.Theta1 += optimizer.update_params(dThetaLoss1, (self, 1))
         return np.sum(dX1.T, axis=1) * sum(dA2) + np.sum(grad2.T, axis=1) * sum(dA)
+    
+    def Theta_backward(self):
+        # input = output
+        grad2 = self.activation.grad(self.A @ self.Theta2 + self.X)
+        # (batch_size, hidden) = (batch_size, output) @ (output, hidden)
+        dTheta2 = self.A.T @ grad2
+        # ---------------------
+        grad1 = self.activation.grad(self.X @ self.Theta1)
+        # (batch_size, input) = (batch_size, hidden) @ (hidden, input)
+        dTheta1 = self.X.T @ grad1
+        return dTheta1
 
     def get_input_dim(self):
         return self.Theta1.shape[0]

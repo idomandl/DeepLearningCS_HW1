@@ -22,6 +22,11 @@ class Layer(Block):
             self.Theta += optimizer.update_params(dThetaLoss, self)
         # dX = (batch_size, input), dA = (batch_size, output)
         return np.sum(dX.T, axis=1) * sum(dA)
+    
+    def Theta_backward(self):
+        grad = self.activation.grad(self.X @ self.Theta)
+        dTheta = self.X.T @ grad
+        return dTheta
 
 # L - w(128,6),x(batch,128)
 # A2 - w(16,128), x(batch,16), DA(batch,128)
